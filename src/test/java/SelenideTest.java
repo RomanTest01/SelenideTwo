@@ -1,24 +1,35 @@
+import com.codeborne.selenide.Condition;
 import org.junit.jupiter.api.Test;
+import org.openqa.selenium.Keys;
 
-//import static com.codeborne.selenide.Condition.exactText;
-//import static com.codeborne.selenide.Selectors.byText;
-import static com.codeborne.selenide.Selectors.byText;
+
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.open;
 
 public class SelenideTest {
 
-    @Test
+    private String datagenerator(int addDays, String pattern) {
+        return LocalDate.now().plusDays(addDays).format(DateTimeFormatter.ofPattern(pattern));
+    }
 
-    void testForm(){
+    @Test
+    void testForm() {
         open("http://localhost:9999/");
-        $("[data-test-id='city']").setValue("Москва");
-        //$(byText("Выберите ваш город")).setValue("Москва");
-        $("[data-test-id='date']").setValue("25.10.2023");
-        $("[data-test-id='name']").setValue("Тимофеев Тимофей");
-        $("[data-test-id='phone']").setValue("+79995551313");
+        $("[placeholder='Город']").setValue("Москва");
+        String planningDate = datagenerator(3, "dd.MM.yyyy");
+        $("[data-test-id='date'] input").sendKeys(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.DELETE);
+        $("[data-test-id='date'] input").setValue(planningDate);
+        $("[data-test-id='name'] input").setValue("Тимофеев Тимофей");
+        $("[data-test-id='phone'] input").setValue("+79995551313");
         $("[data-test-id='agreement']").click();
-        $("button").click();
+        $("button.button").click();
+        $(".notification__content")
+                .shouldBe(Condition.visible, Duration.ofSeconds(15))
+                .shouldHave(Condition.exactText("Встреча успешно забронирована на " + planningDate));
 
 
     }
